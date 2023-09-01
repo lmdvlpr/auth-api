@@ -1,3 +1,5 @@
+import 'dotenv/config'
+
 import express from 'express'
 import usersRoute from './routes/users.route'
 
