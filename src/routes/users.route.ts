@@ -1,30 +1,42 @@
 import { Router, Request, Response } from 'express'
+import UserRepository from '../repositories/user.repository'
 
 const usersRoute = Router()
 
-usersRoute.get('/', (_req: Request, res: Response) => {
-  const users = [{ userName: 'Lucas' }]
+usersRoute.get('/', async (_req: Request, res: Response) => {
+  const users = await UserRepository.findAllUsers()
   res.status(200).json(users)
 })
 
-usersRoute.get('/:id', (req: Request, res: Response) => {
+usersRoute.get('/:id', async (req: Request, res: Response) => {
   const id = req.params.id
-  res.status(200).json({ message: 'ID do usuário solicitado: ', id })
+  const user = await UserRepository.findById(id)
+  res.status(200).json({ message: 'ID do usuário solicitado: ', user })
 })
 
-usersRoute.post('/', (req: Request, res: Response) => {
+usersRoute.post('/', async (req: Request, res: Response) => {
   const newUser = req.body
-  res.status(201).json({ message: 'Usuário criado com sucesso!', newUser })
+  const id = await UserRepository.createUser(newUser)
+  res.status(201).json({ message: 'Usuário criado com sucesso!', id })
 })
 
-usersRoute.put('/:id', (req: Request, res: Response) => {
+usersRoute.put('/:id', async (req: Request<{ id: string }>, res: Response) => {
   const id = req.params.id
-  res.status(200).json({ message: 'Usuário alterado com sucesso!', id })
+  const modifiedUser = req.body
+  modifiedUser.id = id
+  await UserRepository.updateUser(modifiedUser)
+  res
+    .status(200)
+    .json({ message: 'Usuário alterado com sucesso!', modifiedUser })
 })
 
-usersRoute.delete('/:id', (req: Request, res: Response) => {
-  const id = req.params.id
-  res.status(200).json({ message: 'Deleted User:', id })
-})
+usersRoute.delete(
+  '/:id',
+  async (req: Request<{ id: string }>, res: Response) => {
+    const id = req.params.id
+    await UserRepository.removeUser(id)
+    res.status(200).json({ message: 'Usuário deletado com sucesso!:', id })
+  }
+)
 
 export default usersRoute
