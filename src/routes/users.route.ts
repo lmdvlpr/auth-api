@@ -1,4 +1,4 @@
-import { Router, Request, Response } from 'express'
+import { Router, Request, Response, NextFunction } from 'express'
 import UserRepository from '../repositories/user.repository'
 
 const usersRoute = Router()
@@ -8,11 +8,18 @@ usersRoute.get('/', async (_req: Request, res: Response) => {
   res.status(200).json(users)
 })
 
-usersRoute.get('/:id', async (req: Request, res: Response) => {
-  const id = req.params.id
-  const user = await UserRepository.findById(id)
-  res.status(200).json({ message: 'ID do usuário solicitado: ', user })
-})
+usersRoute.get(
+  '/:id',
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const id = req.params.id
+      const user = await UserRepository.findById(id)
+      res.status(200).json({ message: 'ID do usuário solicitado: ', user })
+    } catch (error) {
+      next(error)
+    }
+  }
+)
 
 usersRoute.post('/', async (req: Request, res: Response) => {
   const newUser = req.body

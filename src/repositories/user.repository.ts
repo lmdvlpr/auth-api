@@ -1,4 +1,5 @@
 import db from '../db'
+import DatabaseError from '../models/errors/database.error.model'
 import User from '../models/user.model'
 
 class UserRepository {
@@ -13,12 +14,16 @@ class UserRepository {
   }
 
   async findById(id: string): Promise<User> {
-    const sqlQuery = `SELECT id, username FROM app_user WHERE id = $1`
-    const values = [id]
-    const { rows } = await db.query<User>(sqlQuery, values)
-    const [user] = rows
+    try {
+      const sqlQuery = `SELECT id, username FROM app_user WHERE id = $1`
+      const values = [id]
+      const { rows } = await db.query<User>(sqlQuery, values)
+      const [user] = rows
 
-    return user
+      return user
+    } catch (error) {
+      throw new DatabaseError('Erro na consulta por ID', error)
+    }
   }
 
   async createUser(user: User): Promise<string> {
